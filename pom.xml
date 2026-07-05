@@ -11,7 +11,8 @@
     <packaging>jar</packaging>
 
     <name>LimboRP</name>
-    <description>Resource pack detection and symbol replacement plugin</description>
+    <description>Resource pack detection and symbol replacement plugin for Minecraft 1.16.5</description>
+    <url>https://github.com/yourusername/LimboRP</url>
 
     <properties>
         <java.version>1.8</java.version>
@@ -35,6 +36,7 @@
     </dependencies>
 
     <build>
+        <finalName>${project.name}-${project.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
