@@ -1,0 +1,16 @@
+# LimboRP Configuration
+# Plugin version: 1.0.0
+# Minecraft version: 1.16.5
+
+# URL ресурспака сервера
+resource-pack-url: ""
+
+# SHA-1 хеш ресурспака (можно узнать командой: sha1sum pack.zip)
+resource-pack-hash: ""
+
+# Режим отладки
+debug: false
+
+# Дополнительные замены символов
+# Формат: "символ": "замена"
+replacements: {}
