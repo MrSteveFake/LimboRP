@@ -7,6 +7,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
 
+import java.security.MessageDigest;
+
 public class PlayerListener implements Listener {
     
     private final LimboRP plugin;
@@ -24,18 +26,40 @@ public class PlayerListener implements Listener {
         String resourcePackHash = plugin.getConfig().getString("resource-pack-hash");
         
         if (resourcePackUrl != null && !resourcePackUrl.isEmpty()) {
-            // В Minecraft 1.16.5 setResourcePack принимает String url и byte[] hash
-            // Если хеш пустой, передаем пустой массив байтов
-            byte[] hashBytes = new byte[0];
-            if (resourcePackHash != null && !resourcePackHash.isEmpty()) {
-                // Конвертируем hex строку в byte[] если нужно
-                // Но проще передать пустой массив, если хеш не используется
-                hashBytes = new byte[0];
-            }
-            player.setResourcePack(resourcePackUrl, hashBytes);
-            
-            if (plugin.getConfig().getBoolean("debug", false)) {
-                plugin.getLogger().info("Sending resource pack to " + player.getName());
+            try {
+                if (resourcePackHash != null && !resourcePackHash.isEmpty()) {
+                    // Конвертируем hex строку в byte[20]
+                    String cleanHash = resourcePackHash.trim().toLowerCase().replaceAll("[^0-9a-f]", "");
+                    
+                    if (cleanHash.length() >= 40) {
+                        byte[] hashBytes = new byte[20];
+                        for (int i = 0; i < 20; i++) {
+                            String hexByte = cleanHash.substring(i * 2, i * 2 + 2);
+                            hashBytes[i] = (byte) Integer.parseInt(hexByte, 16);
+                        }
+                        player.setResourcePack(resourcePackUrl, hashBytes);
+                    } else {
+                        plugin.getLogger().warning("Invalid hash format! Using empty hash.");
+                        player.setResourcePack(resourcePackUrl, new byte[20]);
+                    }
+                } else {
+                    // Если хеш не указан, НЕ отправляем ресурспак
+                    // Или отправляем с нулевым хешем
+                    plugin.getLogger().warning("Resource pack hash is empty for player " + player.getName());
+                    player.setResourcePack(resourcePackUrl, new byte[20]);
+                }
+                
+                if (plugin.getConfig().getBoolean("debug", false)) {
+                    plugin.getLogger().info("Sending resource pack to " + player.getName());
+                }
+            } catch (Exception e) {
+                plugin.getLogger().severe("Error sending resource pack to " + player.getName() + ": " + e.getMessage());
+                // Отправляем ресурспак без хеша в случае ошибки
+                try {
+                    player.setResourcePack(resourcePackUrl, new byte[20]);
+                } catch (Exception ex) {
+                    plugin.getLogger().severe("Critical error: " + ex.getMessage());
+                }
             }
         }
     }
@@ -45,8 +69,6 @@ public class PlayerListener implements Listener {
         Player player = event.getPlayer();
         String playerName = player.getName();
         
-        // Используем if-else для обработки статусов
-        // ВНИМАНИЕ: В Minecraft 1.16.5 нет статуса DOWNLOADING
         PlayerResourcePackStatusEvent.Status status = event.getStatus();
         
         if (status == PlayerResourcePackStatusEvent.Status.ACCEPTED) {
@@ -82,12 +104,10 @@ public class PlayerListener implements Listener {
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
         
-        // Проверяем, есть ли у игрока право на обход
         if (player.hasPermission("limborp.bypass")) {
             return;
         }
         
-        // Если ресурспак не загружен, заменяем символы
         if (!plugin.getPackManager().hasResourcePack(player)) {
             String originalMessage = event.getMessage();
             String replacedMessage = plugin.getSymbolReplacer().replaceSymbols(originalMessage);
@@ -107,12 +127,10 @@ public class PlayerListener implements Listener {
     public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
         
-        // Проверяем, есть ли у игрока право на обход
         if (player.hasPermission("limborp.bypass")) {
             return;
         }
         
-        // Если ресурспак не загружен, заменяем символы в командах
         if (!plugin.getPackManager().hasResourcePack(player)) {
             String message = event.getMessage();
             String replacedMessage = plugin.getSymbolReplacer().replaceSymbols(message);
