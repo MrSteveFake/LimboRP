@@ -1,0 +1,19 @@
+name: LimboRP
+version: 1.0.0
+main: com.limborp.LimboRP
+api-version: 1.16
+author: MrSteve
+description: Replaces special symbols if resource pack is not loaded
+website: https://github.com/yourusername/LimboRP
+commands:
+  limborp:
+    description: Main command for LimboRP plugin
+    usage: /limborp <reload|status|check|debug>
+    permission: limborp.admin
+permissions:
+  limborp.admin:
+    description: Admin permissions for LimboRP
+    default: op
+  limborp.bypass:
+    description: Bypass symbol replacement
+    default: false
