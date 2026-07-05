@@ -6,8 +6,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
-import org.bukkit.event.server.ServerListPingEvent;
-import org.bukkit.scoreboard.*;
 
 public class PlayerListener implements Listener {
     
@@ -104,13 +102,6 @@ public class PlayerListener implements Listener {
                 event.setMessage(replacedMessage);
             }
         }
-    }
-    
-    // Обработка таба (PlayerList)
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onPlayerListName(PlayerEvent event) {
-        // Этот метод вызывается периодически для обновления таба
-        // Мы будем использовать его для замены символов в табе
     }
     
     @EventHandler
