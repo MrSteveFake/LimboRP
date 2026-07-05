@@ -1,14 +1,13 @@
 name: LimboRP
-version: 1.0.0
+version: ${project.version}
 main: com.limborp.LimboRP
 api-version: 1.16
-author: MrSteve
+author: YourName
 description: Replaces special symbols if resource pack is not loaded
-website: https://github.com/yourusername/LimboRP
 commands:
   limborp:
     description: Main command for LimboRP plugin
-    usage: /limborp <reload|status|check|debug>
+    usage: /<command> <reload|status|check|debug>
     permission: limborp.admin
 permissions:
   limborp.admin:
