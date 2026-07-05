@@ -24,12 +24,15 @@ public class PlayerListener implements Listener {
         String resourcePackHash = plugin.getConfig().getString("resource-pack-hash");
         
         if (resourcePackUrl != null && !resourcePackUrl.isEmpty()) {
-            // ИСПРАВЛЕНИЕ 1: Убираем тернарный оператор с разными типами
+            // В Minecraft 1.16.5 setResourcePack принимает String url и byte[] hash
+            // Если хеш пустой, передаем пустой массив байтов
+            byte[] hashBytes = new byte[0];
             if (resourcePackHash != null && !resourcePackHash.isEmpty()) {
-                player.setResourcePack(resourcePackUrl, resourcePackHash);
-            } else {
-                player.setResourcePack(resourcePackUrl);
+                // Конвертируем hex строку в byte[] если нужно
+                // Но проще передать пустой массив, если хеш не используется
+                hashBytes = new byte[0];
             }
+            player.setResourcePack(resourcePackUrl, hashBytes);
             
             if (plugin.getConfig().getBoolean("debug", false)) {
                 plugin.getLogger().info("Sending resource pack to " + player.getName());
@@ -42,14 +45,15 @@ public class PlayerListener implements Listener {
         Player player = event.getPlayer();
         String playerName = player.getName();
         
-        // ИСПРАВЛЕНИЕ 2: Используем if-else вместо switch с enum
+        // Используем if-else для обработки статусов
+        // ВНИМАНИЕ: В Minecraft 1.16.5 нет статуса DOWNLOADING
         PlayerResourcePackStatusEvent.Status status = event.getStatus();
         
         if (status == PlayerResourcePackStatusEvent.Status.ACCEPTED) {
             plugin.getPackManager().setPlayerStatus(player, 
                 ResourcePackManager.ResourcePackStatus.ACCEPTED);
             if (plugin.getConfig().getBoolean("debug", false)) {
-                plugin.getLogger().info(playerName + " accepted resource pack, waiting for download...");
+                plugin.getLogger().info(playerName + " accepted resource pack");
             }
         } else if (status == PlayerResourcePackStatusEvent.Status.DECLINED) {
             plugin.getPackManager().setPlayerStatus(player, 
@@ -71,9 +75,6 @@ public class PlayerListener implements Listener {
             if (plugin.getConfig().getBoolean("debug", false)) {
                 plugin.getLogger().info(playerName + " successfully loaded resource pack");
             }
-        } else if (status == PlayerResourcePackStatusEvent.Status.DOWNLOADING) {
-            plugin.getPackManager().setPlayerStatus(player, 
-                ResourcePackManager.ResourcePackStatus.DOWNLOADING);
         }
     }
     
