@@ -27,14 +27,12 @@ public class ResourcePackManager {
     
     public boolean hasResourcePack(Player player) {
         ResourcePackStatus status = playerPackStatus.get(player.getUniqueId());
-        return status == ResourcePackStatus.SUCCESSFULLY_LOADED ||
-               status == ResourcePackStatus.ACCEPTED;
+        return status == ResourcePackStatus.SUCCESSFULLY_LOADED;
     }
     
     public boolean isPending(Player player) {
         ResourcePackStatus status = playerPackStatus.get(player.getUniqueId());
-        return status == ResourcePackStatus.ACCEPTED ||
-               status == ResourcePackStatus.DOWNLOADING;
+        return status == ResourcePackStatus.ACCEPTED;
     }
     
     public ResourcePackStatus getStatus(Player player) {
@@ -55,7 +53,6 @@ public class ResourcePackManager {
         ACCEPTED,
         DECLINED,
         FAILED_DOWNLOAD,
-        DOWNLOADING,
         SUCCESSFULLY_LOADED
     }
 }
