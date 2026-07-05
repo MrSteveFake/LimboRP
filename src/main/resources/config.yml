@@ -3,14 +3,21 @@
 # Minecraft version: 1.16.5
 
 # URL ресурспака сервера
-resource-pack-url: ""
+resource-pack-url: "https://www.dropbox.com/scl/fi/7ntlmw5u8whoch9bueclj/ReallyWorld1.zip?rlkey=5336zsdn025yq7czlw1khwj3j&st=qktyu55e&dl=1"
 
-# SHA-1 хеш ресурспака (можно узнать командой: sha1sum pack.zip)
+# SHA-1 хеш ресурспака (если есть)
 resource-pack-hash: ""
 
 # Режим отладки
-debug: false
+debug: true
 
 # Дополнительные замены символов
-# Формат: "символ": "замена"
-replacements: {}
+# Формат: "спецсимвол": "обычный_символ" (один символ на один символ)
+replacements:
+  # Примеры замен (замените на свои символы из ресурспака)
+  "ꔨ": "D"
+  "ꔩ": "R"
+  "ꔪ": "A"
+  "ꔫ": "G"
+  "ꔬ": "O"
+  "ꔭ": "N"
