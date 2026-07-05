@@ -52,6 +52,10 @@ public class LimboRPCommand implements CommandExecutor, TabCompleter {
                 handleTest(sender, args);
                 break;
                 
+            case "list":
+                handleList(sender);
+                break;
+                
             default:
                 sendHelp(sender);
                 break;
@@ -63,8 +67,9 @@ public class LimboRPCommand implements CommandExecutor, TabCompleter {
     private void handleReload(CommandSender sender) {
         plugin.reloadConfig();
         plugin.getSymbolReplacer().reloadReplacements();
-        sender.sendMessage(ChatColor.GREEN + "[LimboRP] " + ChatColor.WHITE + "Конфигурация перезагружена!");
-        plugin.getLogger().info("Configuration reloaded by " + sender.getName());
+        sender.sendMessage(ChatColor.GREEN + "[LimboRP] " + ChatColor.WHITE + 
+            "Конфигурация перезагружена! Загружено замен: " + 
+            plugin.getSymbolReplacer().getReplacementCount());
     }
     
     private void handleStatus(CommandSender sender) {
@@ -85,13 +90,8 @@ public class LimboRPCommand implements CommandExecutor, TabCompleter {
             (hasPack ? ChatColor.GREEN + "Да" : ChatColor.RED + "Нет"));
         sender.sendMessage(ChatColor.WHITE + "Замена символов: " + 
             (!hasPack ? ChatColor.GREEN + "Активна" : ChatColor.RED + "Отключена"));
-        
-        // Тест замены
-        String testText = "Привет, мир! Hello, world! 123";
-        String replaced = plugin.getSymbolReplacer().replaceSymbols(testText);
-        sender.sendMessage(ChatColor.WHITE + "Тест замены: " + 
-            ChatColor.GRAY + testText + ChatColor.WHITE + " -> " + 
-            ChatColor.GOLD + replaced);
+        sender.sendMessage(ChatColor.WHITE + "Загружено замен: " + 
+            ChatColor.AQUA + plugin.getSymbolReplacer().getReplacementCount());
     }
     
     private void handleCheck(CommandSender sender, String[] args) {
@@ -130,6 +130,7 @@ public class LimboRPCommand implements CommandExecutor, TabCompleter {
     private void handleTest(CommandSender sender, String[] args) {
         if (args.length < 2) {
             sender.sendMessage(ChatColor.RED + "Использование: /limborp test <текст>");
+            sender.sendMessage(ChatColor.GRAY + "Совет: Скопируйте символ из игры и вставьте сюда");
             return;
         }
         
@@ -147,13 +148,30 @@ public class LimboRPCommand implements CommandExecutor, TabCompleter {
         
         sender.sendMessage(ChatColor.YELLOW + "=== Тест замены ===");
         sender.sendMessage(ChatColor.WHITE + "Оригинал: " + ChatColor.GRAY + original);
+        
+        // Показываем коды символов для отладки
+        StringBuilder codes = new StringBuilder();
+        for (char c : original.toCharArray()) {
+            codes.append("U+").append(String.format("%04X", (int)c)).append(" ");
+        }
+        sender.sendMessage(ChatColor.WHITE + "Коды: " + ChatColor.GRAY + codes.toString());
+        
         sender.sendMessage(ChatColor.WHITE + "Результат: " + ChatColor.GOLD + replaced);
         
         if (original.equals(replaced)) {
-            sender.sendMessage(ChatColor.RED + "Символы не были заменены! Проверьте конфигурацию.");
+            sender.sendMessage(ChatColor.RED + "Символы не были заменены!");
+            sender.sendMessage(ChatColor.YELLOW + "Добавьте эти символы в config.yml:");
+            sender.sendMessage(ChatColor.GRAY + codes.toString());
         } else {
             sender.sendMessage(ChatColor.GREEN + "Замена выполнена успешно!");
         }
+    }
+    
+    private void handleList(CommandSender sender) {
+        sender.sendMessage(ChatColor.YELLOW + "=== Загруженные замены ===");
+        sender.sendMessage(ChatColor.WHITE + "Всего замен: " + 
+            ChatColor.AQUA + plugin.getSymbolReplacer().getReplacementCount());
+        sender.sendMessage(ChatColor.GRAY + "Используйте /limborp reload после изменения config.yml");
     }
     
     private void sendHelp(CommandSender sender) {
@@ -162,7 +180,8 @@ public class LimboRPCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.WHITE + "/limborp status " + ChatColor.GRAY + "- Показать ваш статус");
         sender.sendMessage(ChatColor.WHITE + "/limborp check <игрок> " + ChatColor.GRAY + "- Проверить статус игрока");
         sender.sendMessage(ChatColor.WHITE + "/limborp debug " + ChatColor.GRAY + "- Вкл/выкл режим отладки");
-        sender.sendMessage(ChatColor.WHITE + "/limborp test <текст> " + ChatColor.GRAY + "- Тестировать замену символов");
+        sender.sendMessage(ChatColor.WHITE + "/limborp test <текст> " + ChatColor.GRAY + "- Тестировать замену");
+        sender.sendMessage(ChatColor.WHITE + "/limborp list " + ChatColor.GRAY + "- Показать количество замен");
     }
     
     @Override
@@ -170,7 +189,7 @@ public class LimboRPCommand implements CommandExecutor, TabCompleter {
         List<String> completions = new ArrayList<>();
         
         if (args.length == 1) {
-            String[] subCommands = {"reload", "status", "check", "debug", "test"};
+            String[] subCommands = {"reload", "status", "check", "debug", "test", "list"};
             for (String sub : subCommands) {
                 if (sub.startsWith(args[0].toLowerCase())) {
                     completions.add(sub);
