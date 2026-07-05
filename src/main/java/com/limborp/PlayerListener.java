@@ -24,8 +24,12 @@ public class PlayerListener implements Listener {
         String resourcePackHash = plugin.getConfig().getString("resource-pack-hash");
         
         if (resourcePackUrl != null && !resourcePackUrl.isEmpty()) {
-            player.setResourcePack(resourcePackUrl, 
-                                  resourcePackHash != null ? resourcePackHash : "");
+            // ИСПРАВЛЕНИЕ 1: Убираем тернарный оператор с разными типами
+            if (resourcePackHash != null && !resourcePackHash.isEmpty()) {
+                player.setResourcePack(resourcePackUrl, resourcePackHash);
+            } else {
+                player.setResourcePack(resourcePackUrl);
+            }
             
             if (plugin.getConfig().getBoolean("debug", false)) {
                 plugin.getLogger().info("Sending resource pack to " + player.getName());
@@ -38,45 +42,38 @@ public class PlayerListener implements Listener {
         Player player = event.getPlayer();
         String playerName = player.getName();
         
-        switch (event.getStatus()) {
-            case ACCEPTED:
-                plugin.getPackManager().setPlayerStatus(player, 
-                    ResourcePackManager.ResourcePackStatus.ACCEPTED);
-                if (plugin.getConfig().getBoolean("debug", false)) {
-                    plugin.getLogger().info(playerName + " accepted resource pack, waiting for download...");
-                }
-                break;
-                
-            case DECLINED:
-                plugin.getPackManager().setPlayerStatus(player, 
-                    ResourcePackManager.ResourcePackStatus.DECLINED);
-                player.sendMessage(ChatColor.RED + "[LimboRP] " + ChatColor.WHITE + 
-                    "Вы отклонили ресурспак. Текст будет отображаться в стандартном виде.");
-                plugin.getLogger().warning(playerName + " declined resource pack!");
-                break;
-                
-            case FAILED_DOWNLOAD:
-                plugin.getPackManager().setPlayerStatus(player, 
-                    ResourcePackManager.ResourcePackStatus.FAILED_DOWNLOAD);
-                player.sendMessage(ChatColor.RED + "[LimboRP] " + ChatColor.WHITE + 
-                    "Не удалось загрузить ресурспак. Текст будет отображаться в стандартном виде.");
-                plugin.getLogger().warning("Failed to download resource pack for " + playerName);
-                break;
-                
-            case SUCCESSFULLY_LOADED:
-                plugin.getPackManager().setPlayerStatus(player, 
-                    ResourcePackManager.ResourcePackStatus.SUCCESSFULLY_LOADED);
-                player.sendMessage(ChatColor.GREEN + "[LimboRP] " + ChatColor.WHITE + 
-                    "Ресурспак успешно загружен!");
-                if (plugin.getConfig().getBoolean("debug", false)) {
-                    plugin.getLogger().info(playerName + " successfully loaded resource pack");
-                }
-                break;
-                
-            case DOWNLOADING:
-                plugin.getPackManager().setPlayerStatus(player, 
-                    ResourcePackManager.ResourcePackStatus.DOWNLOADING);
-                break;
+        // ИСПРАВЛЕНИЕ 2: Используем if-else вместо switch с enum
+        PlayerResourcePackStatusEvent.Status status = event.getStatus();
+        
+        if (status == PlayerResourcePackStatusEvent.Status.ACCEPTED) {
+            plugin.getPackManager().setPlayerStatus(player, 
+                ResourcePackManager.ResourcePackStatus.ACCEPTED);
+            if (plugin.getConfig().getBoolean("debug", false)) {
+                plugin.getLogger().info(playerName + " accepted resource pack, waiting for download...");
+            }
+        } else if (status == PlayerResourcePackStatusEvent.Status.DECLINED) {
+            plugin.getPackManager().setPlayerStatus(player, 
+                ResourcePackManager.ResourcePackStatus.DECLINED);
+            player.sendMessage(ChatColor.RED + "[LimboRP] " + ChatColor.WHITE + 
+                "Вы отклонили ресурспак. Текст будет отображаться в стандартном виде.");
+            plugin.getLogger().warning(playerName + " declined resource pack!");
+        } else if (status == PlayerResourcePackStatusEvent.Status.FAILED_DOWNLOAD) {
+            plugin.getPackManager().setPlayerStatus(player, 
+                ResourcePackManager.ResourcePackStatus.FAILED_DOWNLOAD);
+            player.sendMessage(ChatColor.RED + "[LimboRP] " + ChatColor.WHITE + 
+                "Не удалось загрузить ресурспак. Текст будет отображаться в стандартном виде.");
+            plugin.getLogger().warning("Failed to download resource pack for " + playerName);
+        } else if (status == PlayerResourcePackStatusEvent.Status.SUCCESSFULLY_LOADED) {
+            plugin.getPackManager().setPlayerStatus(player, 
+                ResourcePackManager.ResourcePackStatus.SUCCESSFULLY_LOADED);
+            player.sendMessage(ChatColor.GREEN + "[LimboRP] " + ChatColor.WHITE + 
+                "Ресурспак успешно загружен!");
+            if (plugin.getConfig().getBoolean("debug", false)) {
+                plugin.getLogger().info(playerName + " successfully loaded resource pack");
+            }
+        } else if (status == PlayerResourcePackStatusEvent.Status.DOWNLOADING) {
+            plugin.getPackManager().setPlayerStatus(player, 
+                ResourcePackManager.ResourcePackStatus.DOWNLOADING);
         }
     }
     
